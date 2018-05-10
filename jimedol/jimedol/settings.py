@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'operation',
     'xadmin',
     'crispy_forms',
-    'captcha'
+    'captcha',
+    'pure_pagination',
 ]
 
 AUTH_USER_MODEL="users.UserProfile"
@@ -75,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media'
 
             ],
         },
@@ -145,6 +147,19 @@ STATICFILES_DIRS = (
 EMAIL_HOST = "smtp.sina.com"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "jim254@sina.com"
-EMAIL_HOST_PASSWORD = ""
+EMAIL_HOST_PASSWORD = "254jim"
 EMAIL_USE_TLS=True
 EMAIL_FROM = "jim254@sina.com"
+
+
+# 上传文件和图片
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
+
+# 设置分页信息
+# PAGINATION_SETTINGS = {
+#     'PAGE_RANGE_DISPLAYED': 5,
+#     'MARGIN_PAGES_DISPLAYED': 3,
+#
+#     'SHOW_FIRST_PAGE_WHEN_INVALID': True,
+# }
