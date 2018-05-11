@@ -37,7 +37,9 @@ urlpatterns = [
     path('org/', include('organization.urls',namespace='org')),
 
     # 处理图片地址
-    re_path('media/(?P<path>.*)',serve,{"document_root":MEDIA_ROOT})
+    re_path('media/(?P<path>.*)',serve,{"document_root":MEDIA_ROOT}),
+    # course的url
+    path('courses/',include('courses.urls',namespace='courses'))
 
 
     # cookie:{"key":sss}
