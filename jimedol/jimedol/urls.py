@@ -42,6 +42,8 @@ urlpatterns = [
     path('courses/',include('courses.urls',namespace='courses'))
 
 
+
+
     # cookie:{"key":sss}
 
 ]
