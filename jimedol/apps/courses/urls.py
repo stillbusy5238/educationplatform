@@ -1,6 +1,6 @@
 from django.urls import path,include,re_path
 from .views import CourseListView,CourseDetailView,CourseInfoView,CommentView,AddCommentsView,VideoPlayView
-app_name = 'courses'
+app_name = 'course'
 urlpatterns = [
     path('list/',CourseListView.as_view(),name="course_list"),
     re_path('detail/(?P<course_id>\d+)',CourseDetailView.as_view(),name="course_detail"),

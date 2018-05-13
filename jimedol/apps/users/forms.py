@@ -2,6 +2,7 @@
 
 from django import forms
 from captcha.fields import CaptchaField
+from .models import UserProfile
 
 
 class LoginForm(forms.Form):
@@ -24,3 +25,9 @@ class ResetPwdForm(forms.Form):
 
     password = forms.CharField(required=True,min_length=5)
     cpassword = forms.CharField(required=True,min_length=5)
+
+class UploadImageForm(forms.ModelForm):
+    class Meta:
+
+        model= UserProfile
+        fields = ['image']

@@ -1,5 +1,7 @@
 from django.shortcuts import render
+import json
 from django.contrib.auth import authenticate,login
+from django.http import HttpResponse
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password
@@ -8,8 +10,10 @@ from django.contrib.auth.hashers import make_password
 from django.views.generic.base import View
 
 from .models import UserProfile,EmailVerifyRecord
-from .forms import LoginForm,registerForm,ForgetForm,ResetPwdForm
+from .forms import LoginForm,registerForm,ForgetForm,ResetPwdForm,UploadImageForm
 from utils.email_send import send_register_email
+from utils.mixin_utils import LoginRequiredMixin
+
 # Create your views here.
 # 自定义登陆延展
 class CustomBackend(ModelBackend):
@@ -152,3 +156,45 @@ class ResetPwdView(View):
         else:
             email = request.POST.get("email","")
             return render(request,"password_reset.html",{"email":email,"reset_form":reset_form})
+
+
+class UserInfoView(LoginRequiredMixin,View):
+    def get(self,request):
+        # 用户个人信息
+        return render(request,"usercenter-info.html",{})
+
+
+
+class ImageUploadView(LoginRequiredMixin,View):
+    def post(self,request):
+        # 文件类型是放在request.files里面
+        # 利用modelform的特点直接保存图片
+        image_form = UploadImageForm(request.POST,request.FILES,instance=request.user)
+        if image_form.is_valid():
+            # image = image_form.cleaned_data['image']
+            # request.user.image = image
+            # request.user.save()
+            image_form.save()
+            return HttpResponse('{"status":"success", "msg":"保存成功"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail", "msg":"保存不成功"}', content_type='application/json')
+
+
+class ChangePwdView(LoginRequiredMixin,View):
+    # 在个人中心修改密码
+
+    def post(self,request):
+        reset_form = ResetPwdForm(request.POST)
+        if reset_form.is_valid():
+            pwd = request.POST.get("password","")
+            cpwd = request.POST.get("cpassword","")
+
+            if pwd != cpwd:
+                return HttpResponse('{"status":"fail", "msg":"密码不一致"}', content_type='application/json')
+            user = request.user
+            user.password = make_password(pwd)
+            user.save()
+            return HttpResponse('{"status":"success", "msg":"修改成功"}', content_type='application/json')
+        else:
+
+            return HttpResponse(json.dumps(reset_form.errors), content_type='application/json')

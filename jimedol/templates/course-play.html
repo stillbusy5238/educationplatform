@@ -21,8 +21,8 @@
 		<div class="crumbs">
 			<ul>
 				<li><a href="index.html">首页</a>></li>
-				<li><a href="{% url 'courses:course_list' %}">公开课程</a>></li>
-				<li><a href="{% url 'courses:course_detail' course.id%}">{{course.name}}</a>></li>
+				<li><a href="{% url 'course:course_list' %}">公开课程</a>></li>
+				<li><a href="{% url 'course:course_detail' course.id%}">{{course.name}}</a>></li>
 				<li>{{video.name}}</li>
 			</ul>
 		</div>
@@ -64,8 +64,8 @@
 					<div class="content">
 							<div class="mod-tab-menu">
 									<ul class="course-menu clearfix">
-											<li><a class="ui-tabs-active active" id="learnOn"  href="{% url 'courses:course_video' course.id%}"><span>章节</span></a></li>
-											<li><a id="commentOn" class="" href="{% url 'courses:course_comment' course.id %}"><span>评论</span></a></li>
+											<li><a class="ui-tabs-active active" id="learnOn"  href="{% url 'course:course_video' course.id%}"><span>章节</span></a></li>
+											<li><a id="commentOn" class="" href="{% url 'course:course_comment' course.id %}"><span>评论</span></a></li>
 									</ul>
 							</div>
 							<div id="notice" class="clearfix">
@@ -81,7 +81,7 @@
 											<ul class="video">
                           {% for video in lesson.get_lesson_video%}
 													<li>
-															<a target="_blank" href="{%url 'courses:video_play'%}" class="J-media-item studyvideo">{{video.name}} ({{video.learn_times}})
+															<a target="_blank" href="{%url 'course:video_play'%}" class="J-media-item studyvideo">{{video.name}} ({{video.learn_times}})
 																	<i class="study-state"></i>
 															</a>
 													</li>
@@ -144,7 +144,7 @@
 															<ul class="other-list">
                                  {% for relate_course in relate_courses %}
 																	<li class="curr">
-																			<a href="{% url 'courses:course_detail' relate_course.id %}" target="_blank">
+																			<a href="{% url 'course:course_detail' relate_course.id %}" target="_blank">
 																					<img src="{{MEDIA_URL}}{{relate_course.image}}" alt="{{relate_course.name}}">
 																					<span class="name autowrap">{{relate_course.name}}</span>
 																			</a>
