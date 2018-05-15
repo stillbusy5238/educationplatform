@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import json
-from django.contrib.auth import authenticate,login
-from django.http import HttpResponse
+from django.contrib.auth import authenticate,login,logout
+from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password
@@ -9,10 +9,14 @@ from django.contrib.auth.hashers import make_password
 # view类
 from django.views.generic.base import View
 
-from .models import UserProfile,EmailVerifyRecord
-from .forms import LoginForm,registerForm,ForgetForm,ResetPwdForm,UploadImageForm
+from .models import UserProfile,EmailVerifyRecord,Banner
+from operation.models import UserCourse,UserFavorite,UserMessage
+from courses.models import Course
+from organization.models import CourseOrg,Teacher
+from .forms import LoginForm,registerForm,ForgetForm,ResetPwdForm,UploadImageForm,UserInfoForm
 from utils.email_send import send_register_email
 from utils.mixin_utils import LoginRequiredMixin
+from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 # 自定义登陆延展
@@ -38,7 +42,8 @@ class loginView(View):
               if user is not None:
                   if user.is_active:
                      login(request,user)
-                     return render(request,"index.html")
+                     from django.urls import reverse
+                     return HttpResponseRedirect(reverse("index"))
                   else:
                      return render(request,'login.html',{'msg':'用户未激活'})
 
@@ -91,6 +96,12 @@ class registerView(View):
 
             user_profile.password = make_password(pass_word)
             user_profile.save()
+            # 写入注册消息
+            user_message = UserMessage()
+            user_message.user = user_profile.id
+            user_message.message= "欢迎注册"
+            user_message.save()
+
 
 
 
@@ -162,6 +173,17 @@ class UserInfoView(LoginRequiredMixin,View):
     def get(self,request):
         # 用户个人信息
         return render(request,"usercenter-info.html",{})
+    def post(self,request):
+        # 必须指明instance
+        user_form = UserInfoForm(request.POST,instance=request.user)
+        if user_form.is_valid():
+            user_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(user_form.errors), content_type='application/json')
+
+
+
 
 
 
@@ -198,3 +220,156 @@ class ChangePwdView(LoginRequiredMixin,View):
         else:
 
             return HttpResponse(json.dumps(reset_form.errors), content_type='application/json')
+
+
+
+class SendEmailView(LoginRequiredMixin,View):
+    # 发送邮箱验证码
+    def get(self,request):
+        email = request.GET.get('email','')
+        if UserProfile.objects.filter(email=email):
+            return HttpResponse('{"email":"邮箱已经注册"}', content_type='application/json')
+        send_register_email(email, "update")
+        return HttpResponse('{"status":"success", "msg":"发送成功"}', content_type='application/json')
+
+
+class UpdateEmailView(LoginRequiredMixin,View):
+    def post(self,request):
+        email = request.POST.get('email','')
+        code = request.POST.get('code','')
+        existed_email = EmailVerifyRecord.objects.filter(email=email,code=code,send_type='update')
+        if existed_email:
+            user = request.user
+            user.email= email
+            user.save()
+            return HttpResponse('{"status":"success", "msg":"修改成功"}', content_type='application/json')
+        else:
+            return HttpResponse('{"email":"验证码出错"}', content_type='application/json')
+
+
+
+class MyCourseView(LoginRequiredMixin,View):
+    # 个人课程
+    def get(self,request):
+        user_course = UserCourse.objects.filter(user=request.user)
+
+
+        return render(request,'usercenter-mycourse.html',{
+            'user_course':user_course
+
+        })
+
+
+class MyFavOrgView(LoginRequiredMixin,View):
+    # 个人收藏机构
+    def get(self,request):
+        org_list = []
+        user_fav_org = UserFavorite.objects.filter(user=request.user,fav_type=2)
+        for fav_org in user_fav_org:
+            org_id = fav_org.fav_id
+            org = CourseOrg.objects.get(id=org_id)
+            org_list.append(org)
+
+        return render(request,'usercenter-fav-org.html',{
+            'org_list':org_list
+
+        })
+
+
+class MyFavTeacherView(LoginRequiredMixin,View):
+    # 个人收藏机构
+    def get(self,request):
+        teacher_list = []
+        user_fav_teacher = UserFavorite.objects.filter(user=request.user,fav_type=3)
+        for fav_teacher in user_fav_teacher:
+            teacher_id = fav_teacher.fav_id
+            teacher = Teacher.objects.get(id=teacher_id)
+            teacher_list.append(teacher)
+
+        return render(request,'usercenter-fav-teacher.html',{
+            'teacher_list':teacher_list
+
+        })
+
+class MyFavCourseView(LoginRequiredMixin,View):
+    # 个人收藏机构
+    def get(self,request):
+        course_list = []
+        user_fav_course = UserFavorite.objects.filter(user=request.user,fav_type=1)
+        for fav_course in user_fav_course:
+            course_id = fav_course.fav_id
+            course = Course.objects.get(id=course_id)
+            course_list.append(course)
+
+        return render(request,'usercenter-fav-course.html',{
+            'course_list':course_list
+
+        })
+
+
+class MyMessageView(LoginRequiredMixin,View):
+    def get(self,request):
+        all_messages = UserMessage.objects.filter(user=request.user.id)
+        all_unreadmessage = UserMessage.objects.filter(user=request.user.id,has_read = False)
+
+        for unread_message in all_unreadmessage:
+            unread_message.has_read = True
+            unread_message.save()
+
+        # 做分页
+        try:
+           page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+           page = 1
+
+
+
+    # Provide Paginator with the request object for complete querystring generation
+
+        p = Paginator(all_messages, 5, request=request)
+
+        messages = p.page(page)
+        return render(request,'usercenter-message.html',{
+          'all_messages':messages
+        })
+
+
+class LogoutView(View):
+    def get(self,request):
+        logout(request)
+        from django.urls import reverse
+        return HttpResponseRedirect(reverse("index"))
+
+
+
+class IndexView(View):
+    # 首页
+    def get(self,request):
+        # 取出轮播图
+        all_banners = Banner.objects.all().order_by('index')
+        course = Course.objects.filter(is_banner=False)[:6]
+        banner_courses = Course.objects.filter(is_banner=False)[:3]
+        courseorg = CourseOrg.objects.all()[:15]
+        return render(request,'index.html',{
+           'all_banners':all_banners,
+           'course':course,
+           'banner_courses':banner_courses,
+           'courseorg':courseorg
+        })
+
+
+
+
+# 配置404
+def page_not_found(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response('404.html',{})
+    response.status_code = 404
+    return response
+
+
+def page_error(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response('500.html',{})
+    response.status_code = 500
+    return response

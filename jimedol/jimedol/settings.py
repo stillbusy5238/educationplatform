@@ -24,9 +24,9 @@ sys.path.insert(0,os.path.join(BASE_DIR,'apps'))
 SECRET_KEY = 'f892k5-do2yn8(wg4@ar%@aa02y1@ufk+2r=5$a&z$dd-d+5dd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -156,6 +156,8 @@ EMAIL_FROM = "jim254@sina.com"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
 
+
+# STATIC_ROOT = os.path.join(BASE_DIR,'static/')
 # 设置分页信息
 # PAGINATION_SETTINGS = {
 #     'PAGE_RANGE_DISPLAYED': 5,

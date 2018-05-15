@@ -38,6 +38,7 @@
 								</div>
 		</div>
 		<form class="perinform" id="jsEditUserForm" autocomplete="off">
+			{%csrf_token%}
 			<ul class="right">
 				<li>昵&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;称：
 											 <input type="text" name="nick_name" id="nick_name" value="{{request.user.nick_name}}" maxlength="10">

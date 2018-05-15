@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path,include,re_path
 import xadmin
 from django.views.generic import TemplateView
-from users.views import loginView,registerView,ActiveUserView,ForgetPwdView,ResetView,ResetPwdView
+from users.views import loginView,registerView,ActiveUserView,ForgetPwdView,ResetView,ResetPwdView,LogoutView,IndexView
 
 from django.views.static import serve
 from jimedol.settings import MEDIA_ROOT
@@ -25,8 +25,9 @@ from jimedol.settings import MEDIA_ROOT
 
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
-    path('', TemplateView.as_view(template_name="index.html"),name="index"),
+    path('',IndexView.as_view() ,name="index"),
     path('login/',loginView.as_view(),name="login"),
+    path('logout/',LogoutView.as_view(),name="logout"),
     path('register/',registerView.as_view(),name="register"),
     path('captcha/', include('captcha.urls')),
     re_path('active/(?P<active_code>.*)/',ActiveUserView.as_view(),name="user_active"),
@@ -38,6 +39,8 @@ urlpatterns = [
 
     # 处理图片地址
     re_path('media/(?P<path>.*)',serve,{"document_root":MEDIA_ROOT}),
+
+    # re_path('static/(?P<path>.*)',serve,{"document_root":STATIC_ROOT}),
     # course的url
     path('course/',include('courses.urls',namespace='course')),
     path('users/',include('users.urls',namespace='users'))
@@ -48,3 +51,12 @@ urlpatterns = [
     # cookie:{"key":sss}
 
 ]
+
+
+
+
+# 全局配置404和500
+
+
+# handler404 = 'users.views.page_not_found'
+# handler500 = 'users.views.page_error'
