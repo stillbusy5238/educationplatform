@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from DjangoUeditor.models import UEditorField
 from organization.models import CourseOrg,Teacher
 # Create your models here.
 
@@ -7,7 +8,8 @@ from organization.models import CourseOrg,Teacher
 class Course(models.Model):
     name = models.CharField(max_length=50,verbose_name= u"课程名")
     desc = models.CharField(max_length=300,verbose_name= u"课程描述")
-    detail =models.TextField(verbose_name= u"课程详情")
+
+	detail= models.TextField(verbose_name='课程详情',default='')
     is_banner = models.BooleanField(default=False,verbose_name="是否轮播")
     degree = models.CharField(choices= (("easy","初级"),("medium","中级"),("hard","高级")),max_length=10)
     learn_times = models.IntegerField(default=0,verbose_name= u"学习时长(分钟数)")
@@ -30,6 +32,7 @@ class Course(models.Model):
         # 获取章节数
         all_lessons = self.lesson_set.all().count()
         return all_lessons
+    # get_zj_nums.short_description是显示名字
 
     def get_learn_nums(self):
         # 获取章节数
@@ -41,6 +44,12 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+class BannerCourse(Course):
+    class Meta:
+        verbose_name = '轮播课程'
+        verbose_name_plural = verbose_name
+        proxy = True
 
 
 # 一个课程会有多个章节 用外间完成

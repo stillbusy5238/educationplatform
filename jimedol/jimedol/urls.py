@@ -43,7 +43,9 @@ urlpatterns = [
     # re_path('static/(?P<path>.*)',serve,{"document_root":STATIC_ROOT}),
     # course的url
     path('course/',include('courses.urls',namespace='course')),
-    path('users/',include('users.urls',namespace='users'))
+    path('users/',include('users.urls',namespace='users')),
+    path('ueditor/',include('DjangoUeditor.urls')),
+
 
 
 

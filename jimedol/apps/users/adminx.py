@@ -8,6 +8,8 @@ class EmailVerifyRecordAdmin(object):
     list_display = ['code','email','send_type','send_time']
     search_fields = ['code','email','send_type']
     list_filter =['code','email','send_type','send_time']
+    # font 设置图标
+    # model_icon = ''
 
 
 
